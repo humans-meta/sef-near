@@ -30,7 +30,7 @@ export function EducationalText() {
       </p>
       <ol>
         <li>
-          Look in <code>frontend/App.js</code> - you'll see <code>getGreeting</code> and <code>setGreeting</code> being called on <code>contract</code>. What's this?
+          Look in <code>frontend/App.js</code> - you'll see <code>getAssetBundles</code> and <code>addAssetBundle</code> being called on <code>contract</code>. What's this?
         </li>
         <li>
           Ultimately, this <code>contract</code> code is defined in <code>./contract</code> – this is the source code for your <a target="_blank" rel="noreferrer" href="https://docs.near.org/docs/develop/contracts/overview">smart contract</a>.</li>

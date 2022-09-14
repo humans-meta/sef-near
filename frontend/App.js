@@ -1,19 +1,17 @@
 import 'regenerator-runtime/runtime';
 import React from 'react';
 
-
-
-import { EducationalText, SignInPrompt, SignOutButton } from './ui-components';
+import { SignInPrompt, SignOutButton } from './ui-components';
 
 
 export default function App({ isSignedIn, contract, wallet }) {
-  const [valueFromBlockchain, setValueFromBlockchain] = React.useState();
+  const [valueFromBlockchain, setValueFromBlockchain] = React.useState([]);
 
   const [uiPleaseWait, setUiPleaseWait] = React.useState(true);
 
   // Get blockchian state once on component load
   React.useEffect(() => {
-    contract.getGreeting()
+    contract.getAssetBundles()
       .then(setValueFromBlockchain)
       .catch(alert)
       .finally(() => {
@@ -27,16 +25,30 @@ export default function App({ isSignedIn, contract, wallet }) {
     return <SignInPrompt greeting={valueFromBlockchain} onClick={() => wallet.signIn()} />;
   }
 
-  function changeGreeting(e) {
+  function addAssetBundle(e) {
     e.preventDefault();
     setUiPleaseWait(true);
     const { greetingInput } = e.target.elements;
-    contract.setGreeting(greetingInput.value)
-      .then(async () => { return contract.getGreeting(); })
+    contract.addAssetBundle(greetingInput.value)
+      .then(async () => { return contract.getAssetBundles(); })
       .then(setValueFromBlockchain)
       .finally(() => {
         setUiPleaseWait(false);
       });
+  }
+
+  function deleteAssetBundle(asset_bundle_index) {
+    setUiPleaseWait(true);
+    contract.deleteAssetBundle(asset_bundle_index)
+      .then(async () => { return contract.getAssetBundles(); })
+      .then(setValueFromBlockchain)
+      .finally(() => {
+        setUiPleaseWait(false);
+      });
+  }
+
+  function parseUrl(url) {
+    return url.split('/').slice(3)
   }
 
   return (
@@ -54,42 +66,49 @@ export default function App({ isSignedIn, contract, wallet }) {
             <thead>
               <tr>
                 <th></th>
-                <th>URL</th>
-                {/* <th>User</th>
+                <th>User</th>
                 <th>Repo</th>
                 <th>Commit</th>
-                <th>File</th> */}
+                <th>File</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th>1</th>
-                <td>{valueFromBlockchain}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
+              {valueFromBlockchain.map((url, index) => (
+                <tr>
+                  <th>{index + 1}</th>
+                  {parseUrl(url).map((x) => (<td>{x}</td>))}
+                  <th className="flex justify-end">
+                    <button className="btn btn-square btn-sm" onClick={() => deleteAssetBundle(index)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </th>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
         <div className="h-8"></div>
-        <form onSubmit={changeGreeting} className="change">
-          <div className="space-x-4 flex">
+      </main>
+      <form onSubmit={addAssetBundle} className="form-control">
+        <div className="flex space-x-4 mb-4">
+          <label className="input-group" >
+            <span>Git URL</span>
             <input
               className="input input-bordered flex-1"
               autoComplete="off"
               defaultValue={valueFromBlockchain}
               id="greetingInput"
             />
-            <button className="btn btn-primary px-8"
-              disabled={uiPleaseWait}>
-              <span>Submit</span>
-            </button>
-          </div>
-          {uiPleaseWait &&
-            <progress className="progress w-full"></progress>}
-        </form>
-      </main>
-    </div>
+          </label >
+          <button className="btn btn-primary px-8"
+            disabled={uiPleaseWait}>
+            <span>Submit</span>
+          </button>
+        </div>
+        {uiPleaseWait &&
+          <progress className="progress w-full"></progress>}
+      </form >
+    </div >
   );
 }
